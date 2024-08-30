@@ -1,9 +1,9 @@
 import { Hono } from 'hono'
+import { logger } from 'hono/logger'
+import userRouter from './routes/user';
+
 
 const app = new Hono()
-
-app.get('/', (c) => {
-  return c.text('Hello Hono!')
-})
+app.route('', userRouter);
 
 export default app
