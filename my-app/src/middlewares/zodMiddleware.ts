@@ -11,7 +11,6 @@ const ZodMiddleware = createMiddleware(async (c, next) => {
     try {
         const userData = await c.req.json();
         UserSchema.parse(userData);
-        c.json = userData;
         await next();
     } catch (error) {
         if (error instanceof z.ZodError) {

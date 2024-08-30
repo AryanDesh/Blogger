@@ -1,6 +1,5 @@
 import { Hono } from 'hono';
 import { jwt , sign } from 'hono/jwt'
-import type { JwtVariables } from 'hono/jwt'
 
 import { PrismaClient } from "@prisma/client/edge";
 import { withAccelerate } from "@prisma/extension-accelerate";
@@ -13,12 +12,14 @@ type Bindings = {
     DATABASE_URL : string;
     JWT_SECRET : string;
 }
-const userRouter =  new Hono<{
+
+export const userRouter =  new Hono<{
     Bindings: Bindings
 }>() ;
 
+
 userRouter.post('/signup', ZodMiddleware, async(c) => {
-    try{
+    // try{
         const prisma = new PrismaClient({
             datasourceUrl: c.env.DATABASE_URL,
         }).$extends(withAccelerate());
@@ -37,12 +38,13 @@ userRouter.post('/signup', ZodMiddleware, async(c) => {
         return c.json({
           jwt: token
         })
-    }
-    catch (error){
-        return c.json({
-            message : " internal Server Error" 
-        }, 500)
-    }
+    // }
+    // catch (error){
+    //     console.log(error);
+    //     return c.json({
+    //         error : error
+    //     }, 500)
+    // }
 })
 
 userRouter.post('/signin', ZodMiddleware , async(c) => {
@@ -53,13 +55,13 @@ userRouter.post('/signin', ZodMiddleware , async(c) => {
         
         const body = await c.req.json();
     
-        const user = await prisma.user.create({
-        data: {
-            email: body.email,
-            password: body.password,
-        },
+        const user = await prisma.user.findUnique({
+            where: {
+                email: body.email,
+        password: body.password
+            }
         });
-        
+    
         if(!user) {
             return c.json({ error: "user not found" }, 403);
         }
@@ -70,9 +72,8 @@ userRouter.post('/signin', ZodMiddleware , async(c) => {
     }
     catch(error){
         return c.json({
-            message : " Internal Server error" 
+            error : error
         }, 500)
     }
 })
 
-export default userRouter;
