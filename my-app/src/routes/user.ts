@@ -5,7 +5,7 @@ import { PrismaClient } from "@prisma/client/edge";
 import { withAccelerate } from "@prisma/extension-accelerate";
 
 
-import ZodMiddleware from '../middlewares/zodMiddleware';
+import{ userZod }from '../middlewares/zodMiddleware';
 import { cors } from 'hono/cors';
 
 type Bindings = {
@@ -19,14 +19,20 @@ export const userRouter =  new Hono<{
 
 userRouter.use(cors());
 
-userRouter.post('/signup', ZodMiddleware, async(c) => {
+userRouter.use(async (c, next) => {
+    const prisma = new PrismaClient({
+        datasourceUrl: c.env.DATABASE_URL,
+    }).$extends(withAccelerate());
+
+    (c as any).set('prisma', prisma);
+    await next();
+});
+
+userRouter.post('/signup', userZod, async(c) => {
     try{
-        const prisma = new PrismaClient({
-            datasourceUrl: c.env.DATABASE_URL,
-        }).$extends(withAccelerate());
-        
+       
         const body = await c.req.json();
-        
+        const prisma = (c as any).get('prisma') as PrismaClient;
         const user = await prisma.user.create({
           data: {
             email: body.email,
@@ -48,18 +54,16 @@ userRouter.post('/signup', ZodMiddleware, async(c) => {
     }
 })
 
-userRouter.post('/signin', ZodMiddleware , async(c) => {
+userRouter.post('/signin', userZod , async(c) => {
     try{
-        const prisma = new PrismaClient({
-            datasourceUrl : c.env.DATABASE_URL,
-        }).$extends(withAccelerate());
         
+        const prisma =  (c as any).get('prisma') as PrismaClient;
         const body = await c.req.json();
     
         const user = await prisma.user.findUnique({
             where: {
                 email: body.email,
-        password: body.password
+                password: body.password
             }
         });
     
