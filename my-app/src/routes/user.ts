@@ -5,8 +5,8 @@ import { PrismaClient } from "@prisma/client/edge";
 import { withAccelerate } from "@prisma/extension-accelerate";
 
 
-
 import ZodMiddleware from '../middlewares/zodMiddleware';
+import { cors } from 'hono/cors';
 
 type Bindings = {
     DATABASE_URL : string;
@@ -17,9 +17,10 @@ export const userRouter =  new Hono<{
     Bindings: Bindings
 }>() ;
 
+userRouter.use(cors());
 
 userRouter.post('/signup', ZodMiddleware, async(c) => {
-    // try{
+    try{
         const prisma = new PrismaClient({
             datasourceUrl: c.env.DATABASE_URL,
         }).$extends(withAccelerate());
@@ -38,13 +39,13 @@ userRouter.post('/signup', ZodMiddleware, async(c) => {
         return c.json({
           jwt: token
         })
-    // }
-    // catch (error){
-    //     console.log(error);
-    //     return c.json({
-    //         error : error
-    //     }, 500)
-    // }
+    }
+    catch (error){
+        console.log(error);
+        return c.json({
+            error : error
+        }, 500)
+    }
 })
 
 userRouter.post('/signin', ZodMiddleware , async(c) => {
