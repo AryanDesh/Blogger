@@ -1,6 +1,6 @@
 import { Hono } from "hono";
 import { cors } from "hono/cors"
-import { blogZod } from "../middlewares/zodMiddleware";
+import { blogZod, blogUpdateZod } from "../middlewares/zodMiddleware";
 
 import { PrismaClient } from "@prisma/client/edge";
 import { withAccelerate } from "@prisma/extension-accelerate";
@@ -65,7 +65,7 @@ blogRouter.post('/', blogZod, async (c) => {
 });
 
 
-blogRouter.put('/', async (c) => {
+blogRouter.put('/', blogUpdateZod, async (c) => {
 	const userId = c.get('userId');
 	const prisma = await (c as any).get('prisma') as PrismaClient;
 	const body = await c.req.json();
@@ -85,10 +85,7 @@ blogRouter.put('/', async (c) => {
 
 blogRouter.get('/:id', async (c) => {
     const id = c.req.param('id');
-	const prisma = new PrismaClient({
-		datasourceUrl: c.env?.DATABASE_URL	,
-	}).$extends(withAccelerate());
-	
+	const prisma = (c as any).get('prisma') as PrismaClient;
 	const post = await prisma.post.findUnique({
 		where: {
 			id

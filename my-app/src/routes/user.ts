@@ -5,7 +5,7 @@ import { PrismaClient } from "@prisma/client/edge";
 import { withAccelerate } from "@prisma/extension-accelerate";
 
 
-import{ userZod }from '../middlewares/zodMiddleware';
+import{ userSigninZod, userSignupZod }from '../middlewares/zodMiddleware';
 import { cors } from 'hono/cors';
 
 type Bindings = {
@@ -28,7 +28,7 @@ userRouter.use(async (c, next) => {
     await next();
 });
 
-userRouter.post('/signup', userZod, async(c) => {
+userRouter.post('/signup', userSignupZod, async(c) => {
     try{
        
         const body = await c.req.json();
@@ -54,7 +54,7 @@ userRouter.post('/signup', userZod, async(c) => {
     }
 })
 
-userRouter.post('/signin', userZod , async(c) => {
+userRouter.post('/signin', userSigninZod , async(c) => {
     try{
         
         const prisma =  (c as any).get('prisma') as PrismaClient;
