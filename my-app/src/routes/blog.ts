@@ -33,29 +33,36 @@ blogRouter.use(async (c, next) => {
 
 });
 
-blogRouter.post('/', blogZod, async (c) => {
+blogRouter.post('/post', blogZod, async (c) => {
     try {
         const body = await c.req.json();
+        console.log("body")
         const prisma = (c as any).get('prisma') as PrismaClient;
         const userPayload = await (c as any).get('payload');
+        
         if (!userPayload || !userPayload.id) {
             return c.json({
                 message: "User not authenticated or email missing"
             }, 401);
         }
-        const userId = c.get('userId');
-
-        const post = await prisma.post.create({
-            data: {
-                title: body.title,
-                content: body.content,
-                authorId: userId
+        const user = await prisma.user.findUnique({
+            where : {
+                id : userPayload.id
             }
-        });
-        console.log("post created successfully")
-        return c.json({
-            post
-        }, 200);
+        })
+        if(user){
+            const post = await prisma.post.create({
+                data: {
+                    title: body.title,
+                    content: body.content,
+                    authorId: user.id
+                }
+            });
+            console.log("post created successfully")
+            return c.json({
+                post
+            }, 200);
+        }
     } catch (e) {
         console.error(e);
         return c.json({
@@ -65,22 +72,29 @@ blogRouter.post('/', blogZod, async (c) => {
 });
 
 
-blogRouter.put('/', blogUpdateZod, async (c) => {
-	const userId = c.get('userId');
+blogRouter.put('/post', blogUpdateZod, async (c) => {
 	const prisma = await (c as any).get('prisma') as PrismaClient;
 	const body = await c.req.json();
-	const post = await prisma.post.update({
-		where: {
-			id: body.id,
-			authorId: userId
-		},
-		data: {
-			title: body.title,
-			content: body.content
-		}
-	});
-    console.log("updated post")
-	return c.json(post);
+    const userPayload = await (c as any).get('payload');
+    const user = await prisma.user.findUnique({
+        where : {
+            id : userPayload.id
+        }
+    })
+    if(user){
+        const post = await prisma.post.update({
+            where: {
+                id: body.id,
+                authorId: user.id
+            },
+            data: {
+                title: body.title,
+                content: body.content
+            }
+        });
+        console.log("updated post")
+        return c.json(post);
+    }
 });
 
 blogRouter.get('/:id', async (c) => {
@@ -95,7 +109,7 @@ blogRouter.get('/:id', async (c) => {
 	return c.json(post);
 })
 
-blogRouter.get('/bulk', async (c) => {
+blogRouter.post('/bulk', async (c) => {
     const userId = c.get('userId');
     const prisma  = (c as any).get('prisma') as PrismaClient;
     const posts = await prisma.post.findMany({

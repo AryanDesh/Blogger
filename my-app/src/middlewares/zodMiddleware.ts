@@ -8,7 +8,6 @@ const UserSignupSchema = z.object({
 });
 
 const UserSigninSchema = z.object({
-    username: z.string(),
     email: z.string().email(),
     password: z.string().min(6),
 });
@@ -24,11 +23,6 @@ const BlogUpdateSchema = z.object({
     id : z.string() || z.number()
 });
 
-
-type UserSignupData = z.infer<typeof UserSignupSchema>;
-type UserSigninData = z.infer<typeof UserSigninSchema>;
-type BlogData = z.infer<typeof BlogSchema>;
-type BlogUpdateData = z.infer<typeof BlogUpdateSchema>;
 
 const createZodMiddleware = <T>(schema: z.ZodSchema<T>) => {
     return createMiddleware(async (c, next) => {

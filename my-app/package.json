@@ -5,9 +5,11 @@
     "deploy": "wrangler deploy --minify src/index.ts"
   },
   "dependencies": {
+    "@aryandesh/common": "^1.0.0",
     "@prisma/client": "^5.19.0",
     "@prisma/extension-accelerate": "^1.1.0",
     "hono": "^4.5.9",
+    "my-app": "file:",
     "prisma": "^5.19.0"
   },
   "devDependencies": {

@@ -17,6 +17,7 @@ export const blogMiddleware = createMiddleware(async (c, next) => {
         if (ver.id) {
             (c as any).set('payload', payload);
             (c as any).set('header', header);
+            console.log("middleware passed")
             await next();
         } else {
             c.status(403);

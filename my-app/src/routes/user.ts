@@ -70,7 +70,6 @@ userRouter.post('/signin', userSigninZod , async(c) => {
         if(!user) {
             return c.json({ error: "user not found" }, 403);
         }
-        
         const jwt = await sign({ id: user.id }, c.env.JWT_SECRET);
         return c.json({ jwt });
 
