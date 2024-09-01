@@ -5,7 +5,7 @@
     "deploy": "wrangler deploy --minify src/index.ts"
   },
   "dependencies": {
-    "@aryandesh/blogger-common": "^1.0.0",
+    "@aryandesh/blogger-zod": "^1.0.1",
     "@prisma/client": "^5.19.0",
     "@prisma/extension-accelerate": "^1.1.0",
     "hono": "^4.5.9",
